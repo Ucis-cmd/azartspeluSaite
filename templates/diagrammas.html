@@ -1,0 +1,8 @@
+{% extends "pamats.html" %} {% block content %}
+<div class="grafiki">
+    <h1>Azartspēļu Grafiki</h1>
+    {% for saite in saites %}
+    <img src="{{ saite }}">
+    {% endfor %}
+</div>
+{% endblock %}

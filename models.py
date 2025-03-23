@@ -1,14 +1,16 @@
 from peewee import *
 
-# Definē datubāzi
 db = SqliteDatabase(None)
 
-
-# Datu modelis
-class DataModel(Model):
-    column1 = CharField()
-    column2 = CharField()
-    value = FloatField()
+class GadaModelis(Model):
+    gads = IntegerField()
+    pavisam = FloatField()
+    automāti = FloatField()
+    kazino_galdi = FloatField()
+    bingo_spēles = FloatField()
+    totalizatori = FloatField()
+    interaktīvās_spēles = FloatField()
+    tālrunis = FloatField()
 
     class Meta:
         database = db

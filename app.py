@@ -1,70 +1,141 @@
 from flask import Flask, render_template, send_file
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
-from models import db, DataModel
+import matplotlib
+from models import db, GadaModelis
 
 app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = "data"
-app.config["DATABASE"] = "database.db"
+matplotlib.use("agg")
 
 
-# Funkcija, kas ielādē datus no CSV faila datubāzē
-def load_data_from_csv(filepath):
-    if DataModel.select().count() == 0:  # Pārbauda, vai datubāze jau nav aizpildīta
-        df = pd.read_csv(filepath)
-        for _, row in df.iterrows():
-            DataModel.create(
-                column1=row["column1"], column2=row["column2"], value=row["value"]
-            )
-
-
-# Inicializē datubāzi
 db.init("database.db")
 db.connect()
-db.create_tables([DataModel], safe=True)
-
-# Ielādē datus no CSV faila
-load_data_from_csv("data/pre_selected_data.csv")
+db.create_tables([GadaModelis], safe=True)
+if GadaModelis.select().count() == 0:
+    df = pd.read_csv("data/azartspeluDati.csv", delimiter=";")
+    
+    for _, row in df.iterrows():
+        GadaModelis.create(
+            gads=row["Laika periods"],
+            pavisam=row["Pavisam"],
+            automāti=row["Azartspēļu automāti"],
+            kazino_galdi=row["Azartspēļu kazino galdi"],
+            bingo_spēles=row["Bingo spēles"],
+            totalizatori=row["Totalizatori"],
+            interaktīvās_spēles=row["Interaktīvās azartspēles"],
+            tālrunis=row["Veiksmes spēles pa tālruni"])
 
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("sākumaLapa.html")
+
+@app.route("/grafiki")
+def grafiki():
+    dati = GadaModelis.select()
+    fig, ax = plt.subplots()
+    df = pd.DataFrame(list(dati.dicts()))
+    
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('#303030')
+    ax.xaxis.label.set_color('white')
+    ax.yaxis.label.set_color('white')
+    ax.tick_params(axis='x', colors='white')
+    ax.tick_params(axis='y', colors='white')
+    df = df.drop(columns=['id'])
+    df.set_index('gads', inplace=True)
+    
+    plot = df.plot(ax=ax)
+
+    nosaukumi = []
+    for nosaukums in df.columns:
+        nosaukums = nosaukums.capitalize().replace("_", " ")
+        nosaukumi.append(nosaukums)
+    ax.legend(
+        nosaukumi,
+        facecolor='black',
+        labelcolor='white'
+    )
+    ax.set_xlabel("Gads")
+    ax.set_ylabel("Neto ieņēmumi no azartspēlēm (milj. eiro)")
+    fig.savefig("static/linijuGrafiks.jpg")
 
 
-@app.route("/visualizations")
-def visualizations():
-    data = DataModel.select()
+    fig, ax = plt.subplots()
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('#303030')   
+    ax.tick_params(axis='x', colors='white')
+    ax.tick_params(axis='y', colors='white')
+    ax.xaxis.label.set_color('white')
+    ax.yaxis.label.set_color('white')
+   
+
+    stabiņa_kolonnas = []
+    for kolonna in df.columns:
+        if kolonna != 'pavisam':
+            stabiņa_kolonnas.append(kolonna)
+
+    stacked_data = df[stabiņa_kolonnas]
+    
+    stacked_data.plot.bar(stacked=True, ax=ax)
+    ax.set_xlabel("Gads")
+    ax.set_ylabel("Neto ieņēmumi no azartspēlēm (milj. eiro)")
+    
+    ax.tick_params(axis='x', labelsize=8)
+    
+    nosaukumi = []
+    for nosaukums in df.columns:
+        nosaukums = nosaukums.capitalize().replace("_", " ")
+        nosaukumi.append(nosaukums)
+    ax.legend(
+        nosaukumi,
+        facecolor='black',
+        labelcolor='white'
+    )
+    
+    fig.savefig("static/gredotsStabins.jpg")
+
+    
+    fig, ax = plt.subplots()
+
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('#303030')
+
+    
+    ax.tick_params(axis='y', colors='white')
+    ax.xaxis.label.set_color('white')
+
+    dati2024 = GadaModelis.select().where(GadaModelis.gads == 2024)
+    df2024 = pd.DataFrame(list(dati2024.dicts()))
+    df2024 = df2024.drop(columns=['id'])
+    df2024.set_index('gads', inplace=True)
+    df2024.plot.bar(ax=ax)
+    plt.xticks(rotation=0)  
+
+    nosaukumi = []
+    for nosaukums in df2024.columns:
+        nosaukums = nosaukums.capitalize().replace("_", " ")
+        nosaukumi.append(nosaukums)
+    ax.legend(
+        nosaukumi,
+        facecolor='black',
+        labelcolor='white'
+    )
+    ax.set_xlabel("2024. gads")
+    ax.set_ylabel("Neto ieņēmumi no azartspēlēm (milj. eiro)")
+    ax.yaxis.label.set_color('white')
+    fig.savefig("static/stabinuGrafiks.jpg")
+
+    saites = ["static/linijuGrafiks.jpg", "static/stabinuGrafiks.jpg", "static/gredotsStabins.jpg"]
+    return render_template("diagrammas.html", saites=saites)
+
+
+@app.route("/lejupielādēt")
+def lejupielāde():
+    data = GadaModelis.select()
     df = pd.DataFrame(list(data.dicts()))
-
-    # Izveido histogrammu
-    plt.figure()
-    df["value"].hist()
-    plot_path = os.path.join("static", "histogram.png")
-    plt.savefig(plot_path)
-    plt.close()
-
-    return render_template("visualizations.html", plot_url=plot_path)
-
-
-@app.route("/download")
-def download():
-    data = DataModel.select()
-    df = pd.DataFrame(list(data.dicts()))
-
-    # Saglabā datus CSV failā
-    download_path = os.path.join("data", "exported_data.csv")
-    df.to_csv(download_path, index=False)
-
-    return send_file(download_path, as_attachment=True)
-
-
-# Aizver datubāzes savienojumu, kad lietotne beidz darbu
-@app.teardown_appcontext
-def close_db_connection(exception):
-    if not db.is_closed():
-        db.close()
+    df.to_csv("data/dati.csv", index=False)
+    return send_file("data/dati.csv", as_attachment=True)
 
 
 if __name__ == "__main__":
