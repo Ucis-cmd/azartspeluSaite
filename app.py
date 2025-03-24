@@ -2,7 +2,23 @@ from flask import Flask, render_template, send_file
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
-from models import db, GadaModelis
+from peewee import *
+
+db = SqliteDatabase(None)
+
+class GadaModelis(Model):
+    gads = IntegerField()
+    pavisam = FloatField()
+    automāti = FloatField()
+    kazino_galdi = FloatField()
+    bingo_spēles = FloatField()
+    totalizatori = FloatField()
+    interaktīvās_spēles = FloatField()
+    tālrunis = FloatField()
+
+    class Meta:
+        database = db
+
 
 app = Flask(__name__)
 matplotlib.use("agg")
@@ -33,18 +49,18 @@ def index():
 @app.route("/grafiki")
 def grafiki():
     dati = GadaModelis.select()
-    fig, ax = plt.subplots()
     df = pd.DataFrame(list(dati.dicts()))
-    
+    df = df.drop(columns=['id'])
+    df.set_index('gads', inplace=True)
+
+    fig, ax = plt.subplots()
     fig.patch.set_facecolor('black')
     ax.set_facecolor('#303030')
     ax.xaxis.label.set_color('white')
     ax.yaxis.label.set_color('white')
     ax.tick_params(axis='x', colors='white')
     ax.tick_params(axis='y', colors='white')
-    df = df.drop(columns=['id'])
-    df.set_index('gads', inplace=True)
-    
+
     plot = df.plot(ax=ax)
 
     nosaukumi = []
@@ -59,6 +75,37 @@ def grafiki():
     ax.set_xlabel("Gads")
     ax.set_ylabel("Neto ieņēmumi no azartspēlēm (milj. eiro)")
     fig.savefig("static/linijuGrafiks.jpg")
+
+    
+    fig, ax = plt.subplots()
+
+    fig.patch.set_facecolor('black')
+    ax.set_facecolor('#303030')
+
+    
+    ax.tick_params(axis='y', colors='white')
+    ax.xaxis.label.set_color('white')
+
+    dati2024 = GadaModelis.select().where(GadaModelis.gads == 2024)
+    df2024 = pd.DataFrame(list(dati2024.dicts()))
+    df2024 = df2024.drop(columns=['id'])
+    df2024.set_index('gads', inplace=True)
+    df2024.plot.bar(ax=ax)
+    plt.xticks(rotation=0)  
+
+    nosaukumi = []
+    for nosaukums in df2024.columns:
+        nosaukums = nosaukums.capitalize().replace("_", " ")
+        nosaukumi.append(nosaukums)
+    ax.legend(
+        nosaukumi,
+        facecolor='black',
+        labelcolor='white'
+    )
+    ax.set_xlabel("2024. gads")
+    ax.set_ylabel("Neto ieņēmumi no azartspēlēm (milj. eiro)")
+    ax.yaxis.label.set_color('white')
+    fig.savefig("static/stabinuGrafiks.jpg")
 
 
     fig, ax = plt.subplots()
@@ -96,37 +143,6 @@ def grafiki():
     )
     
     fig.savefig("static/gredotsStabins.jpg")
-
-    
-    fig, ax = plt.subplots()
-
-    fig.patch.set_facecolor('black')
-    ax.set_facecolor('#303030')
-
-    
-    ax.tick_params(axis='y', colors='white')
-    ax.xaxis.label.set_color('white')
-
-    dati2024 = GadaModelis.select().where(GadaModelis.gads == 2024)
-    df2024 = pd.DataFrame(list(dati2024.dicts()))
-    df2024 = df2024.drop(columns=['id'])
-    df2024.set_index('gads', inplace=True)
-    df2024.plot.bar(ax=ax)
-    plt.xticks(rotation=0)  
-
-    nosaukumi = []
-    for nosaukums in df2024.columns:
-        nosaukums = nosaukums.capitalize().replace("_", " ")
-        nosaukumi.append(nosaukums)
-    ax.legend(
-        nosaukumi,
-        facecolor='black',
-        labelcolor='white'
-    )
-    ax.set_xlabel("2024. gads")
-    ax.set_ylabel("Neto ieņēmumi no azartspēlēm (milj. eiro)")
-    ax.yaxis.label.set_color('white')
-    fig.savefig("static/stabinuGrafiks.jpg")
 
     saites = ["static/linijuGrafiks.jpg", "static/stabinuGrafiks.jpg", "static/gredotsStabins.jpg"]
     return render_template("diagrammas.html", saites=saites)
