@@ -72,19 +72,21 @@ def grafiki():
 
     stabiņa_kolonnas = []
     for kolonna in df.columns:
-        if kolonna != 'pavisam':
+        if kolonna == 'pavisam':
+            continue
+        else:
             stabiņa_kolonnas.append(kolonna)
 
-    stacked_data = df[stabiņa_kolonnas]
+    stabiņu_dati = df[stabiņa_kolonnas]
     
-    stacked_data.plot.bar(stacked=True, ax=ax)
+    stabiņu_dati.plot.bar(stacked=True, ax=ax)
     ax.set_xlabel("Gads")
     ax.set_ylabel("Neto ieņēmumi no azartspēlēm (milj. eiro)")
     
     ax.tick_params(axis='x', labelsize=8)
     
     nosaukumi = []
-    for nosaukums in df.columns:
+    for nosaukums in stabiņu_dati.columns:
         nosaukums = nosaukums.capitalize().replace("_", " ")
         nosaukumi.append(nosaukums)
     ax.legend(
