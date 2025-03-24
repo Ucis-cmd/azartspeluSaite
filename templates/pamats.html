@@ -8,15 +8,13 @@
     <link rel="stylesheet" href="static/styles.css">
   </head>
   <body>
-    <header class="navigācija">
-      <nav>
+    <div class="navigācija">
           <a href="{{ url_for('index') }}" class="logo"><i class="fas fa-dice"></i></a>
           <div class="saites">
               <a href="{{ url_for('lejupielāde') }}" class="saite">Lejupielādēt</a>
               <a href="{{ url_for('grafiki') }}" class="saite">Grafiki</a>
-          </div>
-      </nav>
-    </header>
+      </div>
+    </div>
     <main>{% block content %}{% endblock %}</main>
   </body>
 </html>

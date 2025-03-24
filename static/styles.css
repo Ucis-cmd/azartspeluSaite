@@ -2,45 +2,23 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 0;
-    position: relative;
-    min-height: 100vh;
-}
-
-body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     background-color: #000000;
-    z-index: -1;
 }
 
 .navigācija {
-    background: #000000;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.navigācija nav {
     height: 70px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background: #000000;
 }
 
 .logo {
     color: #e74c3c;
     text-decoration: none;
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.saites {
-    display: flex;
+    font-size: 1.5rem;;
 }
 
 .saite {
@@ -48,7 +26,6 @@ body::before {
     text-decoration: none;
     padding: 0.5rem 1rem;
     margin: 0 0.5rem;
-    border-radius: 4px;
     transition: background-color 0.3s ease;
 }
 
@@ -68,6 +45,7 @@ body::before {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    z-index: 0;
 }
 
 .galvenāLapa::before {
@@ -91,40 +69,28 @@ body::before {
     margin-bottom: 20px;
 }
 
-.galvenaisTeksts {
-    font-size: 1.25rem;
-    margin-bottom: 40px;
-}
-
 .pogas {
     display: flex;
-    flex-direction: row;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 15px;
-    max-width: 100%;
-    padding: 0 20px;
 }
 
 .pogas .poga {
     margin: 10px;
     padding: 15px 30px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     border-radius: 30px;
     transition: all 0.3s ease;
-    box-sizing: border-box;
-    max-width: 100%;
     text-decoration: none;
     color: white;
 }
 
-.pogas .pogaPirmā {
+.pogas .pogasarkana {
     background: #e74c3c;
-    border: none;
     color: white;
 }
 
-.pogas .pogaPirmā:hover {
+.pogas .pogasarkana:hover {
     background: #c0392b;
 }
 
